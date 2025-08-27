@@ -483,30 +483,20 @@ public final class SystemOS implements Runnable{
     
         return 0;
     }
-    public double calcThroughput() {
-    
-        if (processes.isEmpty()) return 0;
-        int firstInitTime = Integer.MAX_VALUE;
-        int lastFinishedTime = Integer.MIN_VALUE;
-        int finishedCount = 0; //store ammount of finished processes
 
-        for(Process p: processes){
-            if(p.getTime_finished() != -1){
-                //Only check finished processes
-                finishedCount++; 
-                if (p.getTime_init() < firstInitTime) {
-                    //Check which process was the first to initiate
-                    firstInitTime = p.getTime_init();
-                }
-                if (p.getTime_finished() > lastFinishedTime) {
-                    //Check wich process was the last to finish
-                    lastFinishedTime = p.getTime_finished();
-                }
+    public double calcThroughput() {
+        if (processes.isEmpty() || clock == 0) return 0;
+
+        int finishedCount = 0; // number of completed processes
+
+        for (Process p : processes) {
+            if (p.getTime_finished() != -1) {
+                finishedCount++;
             }
         }
-        int makespan = lastFinishedTime - firstInitTime;   
-        if (makespan <= 0) return 0;
-        return (double) finishedCount/ makespan; // Procesos terminados por unidad de tiempo
+
+        // Throughput = completed processes / total simulation time
+        return (double) finishedCount / clock;
     }
     
     public double calcAvgWaitingTime() {
