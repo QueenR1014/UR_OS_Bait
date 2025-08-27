@@ -479,9 +479,19 @@ public final class SystemOS implements Runnable{
     }
     
     public double calcTurnaroundTime() {
-        
-    
-        return 0;
+        int sumTA = 0;
+        int finishedCount = 0; //To not divide over processes.size()
+        for(Process p: processes){
+            if(p.getTime_finished() != -1){
+                //Just Calculate for finished processes
+                int temp = p.getTime_finished() - p.getTime_init();
+                sumTA += temp;
+                finishedCount++;
+            }
+        }
+
+        if(finishedCount == 0) return 0; //avoid division by zero
+        return (double) sumTA/finishedCount;
     }
 
     public double calcThroughput() {
