@@ -423,8 +423,8 @@ public final class SystemOS implements Runnable{
 
             pw.println("***Performance Indicators***");
             pw.println("Total execution cycles: " + clock);
-            pw.println("CPU Utilization: " + this.calcCPUUtilization());
             pw.println("Throughput: " + this.calcThroughput());
+            pw.println("CPU Utilization: " + this.calcCPUUtilization());
             pw.println("Average Turnaround Time: " + this.calcTurnaroundTime());
             pw.println("Average Waiting Time: " + this.calcAvgWaitingTime());
             pw.println("Average Context Switches (solo Gantt): " + this.calcAvgContextSwitches());
@@ -447,13 +447,13 @@ public final class SystemOS implements Runnable{
 
         System.out.println("***Performance Indicators***");
         System.out.println("Total execution cycles: " + clock);
-        System.out.println("CPU Utilization: " + this.calcCPUUtilization());
         System.out.println("Throughput: " + this.calcThroughput());
+        System.out.println("CPU Utilization: " + this.calcCPUUtilization());
+        System.out.println("Average Response Time: " + this.calcResponseTime());
         System.out.println("Average Turnaround Time: " + this.calcTurnaroundTime());
         System.out.println("Average Waiting Time: " + this.calcAvgWaitingTime());
         System.out.println("Average Context Switches (solo Gantt): " + this.calcAvgContextSwitches());
         System.out.println("Average Context Switches (completo): " + this.calcAvgContextSwitches2());
-        System.out.println("Average Response Time: " + this.calcResponseTime());
         
         
         System.out.println("*********Comparation:************************");
@@ -483,16 +483,45 @@ public final class SystemOS implements Runnable{
     
         return 0;
     }
-    
     public double calcThroughput() {
-        if (processes.isEmpty()) return 0;
     
-        return 0; // Procesos terminados por unidad de tiempo
+        if (processes.isEmpty()) return 0;
+        int firstInitTime = Integer.MAX_VALUE;
+        int lastFinishedTime = Integer.MIN_VALUE;
+        int finishedCount = 0; //store ammount of finished processes
+
+        for(Process p: processes){
+            if(p.getTime_finished() != -1){
+                //Only check finished processes
+                finishedCount++; 
+                if (p.getTime_init() < firstInitTime) {
+                    //Check which process was the first to initiate
+                    firstInitTime = p.getTime_init();
+                }
+                if (p.getTime_finished() > lastFinishedTime) {
+                    //Check wich process was the last to finish
+                    lastFinishedTime = p.getTime_finished();
+                }
+            }
+        }
+        int makespan = lastFinishedTime - firstInitTime;   
+        if (makespan <= 0) return 0;
+        return (double) finishedCount/ makespan; // Procesos terminados por unidad de tiempo
     }
     
     public double calcAvgWaitingTime() {
-           
-        return 0;
+        if(processes.isEmpty()) return 0;
+
+        double totalWT = 0;
+        for(Process p : processes){
+            if(p.getTime_finished() != -1){
+                //If current process was finished
+                int total_time = p.getTime_finished() - p.getTime_init(); //time since process was initiated and terminated 
+                int waiting_time = total_time - p.getBurstTime(); //total wating time (ammount of idle cycles)
+                totalWT += waiting_time;
+            }
+        }
+        return totalWT/processes.size();
     }
     
     //Everytime a process is taken out from memory, when a interruption occurs

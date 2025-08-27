@@ -87,10 +87,11 @@ public class Process implements Comparable{
         }
     }
 
-
+    
     public Integer getFirstExecutionTime() {
         return firstExecutionTime;
     }
+   
 
     public int getResponseTime() {
         if (firstExecutionTime == -1) { 
