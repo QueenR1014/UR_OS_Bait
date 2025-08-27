@@ -474,8 +474,8 @@ public final class SystemOS implements Runnable{
     }
     
     public double calcCPUUtilization() {
-        
-        return 0; // Mantiene el cálculo correcto
+        if (clock == 0) return 0;
+        return (double)(clock - cpucount) / clock; // busy cycles / total cycles
     }
     
     public double calcTurnaroundTime() {
