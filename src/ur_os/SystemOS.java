@@ -528,22 +528,40 @@ public final class SystemOS implements Runnable{
     //Everytime a process is taken out from memory, when a interruption occurs
     public double calcAvgContextSwitches() {
         if(processes.isEmpty()) return 0; // No switches if no process done
-
-        return (double) os.getTotalContextSwitches()/ processes.size();
+        int totalCS = os.getTotalContextSwitches();
+        //System.out.println("totalCS from rq: " + totalCS);
+        return (double) totalCS/ processes.size();
     }
     
     
     //Just context switches based on the execution timeline
     public double calcAvgContextSwitches2() {
-        
-        return 0;
+         if(processes.isEmpty() || execution.isEmpty()) return 0;
+
+        int last = execution.get(0); 
+        int totalCS = 0;
+        for(int current:execution){
+            if(current != last){
+                totalCS++;
+                last = current;
+            }
+        }
+        //System.out.println("Counted: " + totalCS);
+        return (double) totalCS/processes.size();
     }
     
     
     public double calcResponseTime() {
-        
-        return 0;
+        if(processes.isEmpty()) return 0;
 
+        double sum = 0;
+        for(Process p : processes) {
+            if(p.getFirstExecutionTime() != -1){
+                sum += p.getFirstExecutionTime() - p.getTime_init();
+            }
+        }
+
+        return sum / processes.size();
     }
     public void compareFiles(String filePath1, String filePath2) {
         try (BufferedReader reader1 = new BufferedReader(new FileReader(filePath1));
