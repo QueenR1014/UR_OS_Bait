@@ -18,15 +18,37 @@ public class SJF_NP extends Scheduler{
    
     @Override
     public void getNext(boolean cpuEmpty) {
-        
-       //Insert code here
-        
+        if (cpuEmpty && !processes.isEmpty()) {
+            Process menor_burst = null;
+
+
+            for (Process p : processes) {
+                if (menor_burst == null) {
+                    menor_burst = p;
+                } else if (p.getRemainingTimeInCurrentBurst() <= menor_burst.getRemainingTimeInCurrentBurst()) {
+                    menor_burst = p;
+                } else if (p.getRemainingTimeInCurrentBurst() == shortest.getRemainingTimeInCurrentBurst()) {
+                    shortest = tieBreaker(shortest, p); 
+                }
+
+            }
+
+       
+            if (menor_burst != null) {
+                processes.remove(menor_burst);
+                os.interrupt(InterruptType.SCHEDULER_RQ_TO_CPU, menor_burst);
+            }
+        }
     }
     
     @Override
-    public void newProcess(boolean cpuEmpty) {} //Non-preemtive
+    public void newProcess(boolean cpuEmpty) {
+        
+    } //Non-preemtive
 
     @Override
-    public void IOReturningProcess(boolean cpuEmpty) {} //Non-preemtive
+    public void IOReturningProcess(boolean cpuEmpty) {
+        
+    } //Non-preemtive
     
 }
