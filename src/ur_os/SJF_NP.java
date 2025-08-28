@@ -1,54 +1,45 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package ur_os;
 
-/**
- *
- * @author prestamour
- */
-public class SJF_NP extends Scheduler{
+public class SJF_NP extends Scheduler {
 
-    
-    SJF_NP(OS os){
+    SJF_NP(OS os) {
         super(os);
     }
-    
-   
+
     @Override
     public void getNext(boolean cpuEmpty) {
-        if (cpuEmpty && !processes.isEmpty()) {
-            Process menor_burst = null;
-
+        if (!processes.isEmpty() && cpuEmpty) {
+            Process shortest = null;
 
             for (Process p : processes) {
-                if (menor_burst == null) {
-                    menor_burst = p;
-                } else if (p.getRemainingTimeInCurrentBurst() <= menor_burst.getRemainingTimeInCurrentBurst()) {
-                    menor_burst = p;
-                } else if (p.getRemainingTimeInCurrentBurst() == shortest.getRemainingTimeInCurrentBurst()) {
-                    shortest = tieBreaker(shortest, p); 
+                if (shortest == null) {
+                    shortest = p;
+                } else if (p.getBurstTime() < shortest.getBurstTime()) {
+                    shortest = p; // compare total burst time
+                } else if (p.getBurstTime() == shortest.getBurstTime()) {
+                    shortest = tieBreaker(shortest, p);
                 }
-
             }
 
-       
-            if (menor_burst != null) {
-                processes.remove(menor_burst);
-                os.interrupt(InterruptType.SCHEDULER_RQ_TO_CPU, menor_burst);
+            if (shortest != null) {
+                processes.remove(shortest);
+                os.interrupt(InterruptType.SCHEDULER_RQ_TO_CPU, shortest);
+                addContextSwitch(); // CPU got a new process
             }
         }
     }
-    
+
     @Override
     public void newProcess(boolean cpuEmpty) {
-        
-    } //Non-preemtive
+        if (cpuEmpty) {
+            getNext(true); // schedule immediately if CPU is empty
+        }
+    }
 
     @Override
     public void IOReturningProcess(boolean cpuEmpty) {
-        
-    } //Non-preemtive
-    
+        if (cpuEmpty) {
+            getNext(true); // schedule immediately if CPU is empty
+        }
+    }
 }
