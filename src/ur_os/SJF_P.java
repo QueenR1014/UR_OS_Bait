@@ -20,42 +20,43 @@ public class SJF_P extends Scheduler {
 
     @Override
     public void newProcess(boolean cpuEmpty) {
-        
         if (!cpuEmpty) {
             os.interrupt(InterruptType.SCHEDULER_CPU_TO_RQ, null);
+            addContextSwitch(); // <-- CPU process switched due to preemption
         }
     }
 
     @Override
     public void IOReturningProcess(boolean cpuEmpty) {
-        
-        if (!cpuEmpty) {
-            os.interrupt(InterruptType.SCHEDULER_CPU_TO_RQ, null);
-        }
+            if (!cpuEmpty) {
+                os.interrupt(InterruptType.SCHEDULER_CPU_TO_RQ, null);
+                addContextSwitch(); // <-- CPU process switched due to preemption
+            }
     }
+    
+    
 
     @Override
     public void getNext(boolean cpuEmpty) {
-        if (cpuEmpty && !processes.isEmpty()) {
-            Process menor_burst = null;
-
+        if (!processes.isEmpty() && cpuEmpty) {
+            Process shortest = null;
 
             for (Process p : processes) {
-                if (menor_burst == null) {
-                    menor_burst = p;
-                } else if (p.getRemainingTimeInCurrentBurst() <= menor_burst.getRemainingTimeInCurrentBurst()) {
-                    menor_burst = p;
+                if (shortest == null) {
+                    shortest = p;
+                } else if (p.getRemainingTimeInCurrentBurst() < shortest.getRemainingTimeInCurrentBurst()) {
+                    shortest = p;
                 } else if (p.getRemainingTimeInCurrentBurst() == shortest.getRemainingTimeInCurrentBurst()) {
-                    shortest = tieBreaker(shortest, p); 
+                    shortest = tieBreaker(shortest, p);
                 }
-
             }
 
-       
-            if (menor_burst != null) {
-                processes.remove(menor_burst);
-                os.interrupt(InterruptType.SCHEDULER_RQ_TO_CPU, menor_burst);
+            if (shortest != null) {
+                processes.remove(shortest);
+                os.interrupt(InterruptType.SCHEDULER_RQ_TO_CPU, shortest);
+                addContextSwitch();  // <-- Count the context switch here
             }
-        }
-    }
+        }
+    }
+
 }
