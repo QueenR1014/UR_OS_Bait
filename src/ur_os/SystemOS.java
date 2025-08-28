@@ -354,7 +354,7 @@ public final class SystemOS implements Runnable{
         ArrayList<Process> ps;
         
         System.out.println("***SIMULATION START***");
-        
+        System.out.println("Scheduler in use: " + selectedScheduler);
         int i=0;
         Process temp_exec;
         int tempID;
@@ -515,6 +515,7 @@ public final class SystemOS implements Runnable{
         double totalWT = 0;
         for(Process p : processes){
             if(p.getTime_finished() != -1){
+
                 //If current process was finished
                 int total_time = p.getTime_finished() - p.getTime_init(); //time since process was initiated and terminated 
                 int waiting_time = total_time - p.getBurstTime(); //total wating time (ammount of idle cycles)
@@ -526,8 +527,9 @@ public final class SystemOS implements Runnable{
     
     //Everytime a process is taken out from memory, when a interruption occurs
     public double calcAvgContextSwitches() {
-        
-        return 0;
+        if(processes.isEmpty()) return 0; // No switches if no process done
+
+        return (double) os.getTotalContextSwitches()/ processes.size();
     }
     
     

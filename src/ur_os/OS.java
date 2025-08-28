@@ -85,4 +85,10 @@ public class OS {
         System.out.println("Process list:");
         System.out.println(rq.toString());
     }
+
+    //Get Context Switches from ReadyQueue
+    public int getTotalContextSwitches(){
+        //Access internal scheduler variable
+        return rq.getTotalContextSwitches();
+    }
 }

@@ -19,6 +19,9 @@ public class FCFS extends Scheduler{
     public void getNext(boolean cpuEmpty) {
         if(!processes.isEmpty() && cpuEmpty)
         {        
+            //Count this as a context Switch
+            addContextSwitch();
+            
             Process p = processes.get(0);
             processes.remove();
             os.interrupt(InterruptType.SCHEDULER_RQ_TO_CPU, p);
