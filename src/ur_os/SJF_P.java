@@ -12,30 +12,50 @@ import java.util.List;
  *
  * @author prestamour
  */
-public class SJF_P extends Scheduler{
+public class SJF_P extends Scheduler {
 
-    
-    SJF_P(OS os){
+    SJF_P(OS os) {
         super(os);
-
     }
-    
-    @Override
-    public void newProcess(boolean cpuEmpty){// When a NEW process enters the queue, process in CPU, if any, is extracted to compete with the rest
-        
-    } 
 
     @Override
-    public void IOReturningProcess(boolean cpuEmpty){// When a process return from IO and enters the queue, process in CPU, if any, is extracted to compete with the rest
+    public void newProcess(boolean cpuEmpty) {
         
-    } 
-    
-   
+        if (!cpuEmpty) {
+            os.interrupt(InterruptType.SCHEDULER_CPU_TO_RQ, null);
+        }
+    }
+
+    @Override
+    public void IOReturningProcess(boolean cpuEmpty) {
+        
+        if (!cpuEmpty) {
+            os.interrupt(InterruptType.SCHEDULER_CPU_TO_RQ, null);
+        }
+    }
+
     @Override
     public void getNext(boolean cpuEmpty) {
-        
-        //Insert code here
+        if (cpuEmpty && !processes.isEmpty()) {
+            Process menor_burst = null;
 
-     }
- 
+
+            for (Process p : processes) {
+                if (menor_burst == null) {
+                    menor_burst = p;
+                } else if (p.getRemainingTimeInCurrentBurst() <= menor_burst.getRemainingTimeInCurrentBurst()) {
+                    menor_burst = p;
+                } else if (p.getRemainingTimeInCurrentBurst() == shortest.getRemainingTimeInCurrentBurst()) {
+                    shortest = tieBreaker(shortest, p); 
+                }
+
+            }
+
+       
+            if (menor_burst != null) {
+                processes.remove(menor_burst);
+                os.interrupt(InterruptType.SCHEDULER_RQ_TO_CPU, menor_burst);
+            }
+        }
+    }
 }
