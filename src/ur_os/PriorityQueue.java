@@ -15,20 +15,25 @@ import java.util.Arrays;
 public class PriorityQueue extends Scheduler{
 
     int currentScheduler;
-    
+    private ArrayList<Integer> threshold; //Max amount of starvation  
     private ArrayList<Scheduler> schedulers;
     
+    //Single priority queue
     PriorityQueue(OS os){
         super(os);
         currentScheduler = -1;
-        schedulers = new ArrayList();
+        schedulers.add(new RoundRobin(os, 5)); //default scheduler
     }
     
-    PriorityQueue(OS os, Scheduler... s){ //Received multiple arrays
+    PriorityQueue(OS os, Scheduler... s){ //Received multiple arrays, no thresholds specified
+        
         this(os);
         schedulers.addAll(Arrays.asList(s));
-        if(s.length > 0)
+        if(s.length > 0){
             currentScheduler = 0;
+
+        } 
+
     }
     
     
@@ -36,6 +41,11 @@ public class PriorityQueue extends Scheduler{
     public void addProcess(Process p){
        //Overwriting the parent's addProcess(Process p) method may be necessary in order to decide what to do with process coming from the CPU.
        //On which queue should the process go?
+        
+       //Check wich type of queue we'll use
+       if(processes.isEmpty()){
+        
+       }
         
     }
     
