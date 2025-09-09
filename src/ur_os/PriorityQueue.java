@@ -15,23 +15,21 @@ import java.util.Arrays;
 public class PriorityQueue extends Scheduler{
 
     private int currentScheduler;
-    private ArrayList<Integer> threshold; //Max amount of starvation  
-    private ArrayList<Integer> starvationCounter; //starvation timers per scheduler
     private ArrayList<Scheduler> schedulers;
     
-    //----------------- 1. Single priority queue
+    //----------------- 1. Single priority queues
     PriorityQueue(OS os) {
         super(os);
         this.schedulers = new ArrayList<>();
-        this.threshold = new ArrayList<>();
-        this.starvationCounter = new ArrayList<>();
+        //this.threshold = new ArrayList<>();
+        //this.starvationCounter = new ArrayList<>();
         this.currentScheduler = -1;
 
         // default: one RR
         Scheduler rr = new RoundRobin(os, 5);
         schedulers.add(rr);
-        threshold.add(10);
-        starvationCounter.add(0);
+        /*threshold.add(10);
+        starvationCounter.add(0);*/
         currentScheduler = 0; //default value for single queue
     }
     
@@ -40,17 +38,17 @@ public class PriorityQueue extends Scheduler{
         this(os); // initialize lists
         schedulers.addAll(Arrays.asList(s));
 
-        int defaultStarvation = 10;
+        /*int defaultStarvation = 10;
         for (int i = 0; i < s.length; i++) {
             threshold.add(defaultStarvation);
             starvationCounter.add(0);
-        }
+        }*/
 
         this.currentScheduler = (s.length > 0) ? 0 : -1;
     }
 
     //----------------- 3. Multiple queues, specified thresholds
-    PriorityQueue(OS os, ArrayList<Scheduler> s, ArrayList<Integer> t){
+    /*PriorityQueue(OS os, ArrayList<Scheduler> s, ArrayList<Integer> t){
         super(os);
         //check every queue has it's starvation limit
         if(s.size() != t.size()){
@@ -66,17 +64,19 @@ public class PriorityQueue extends Scheduler{
 
         this.currentScheduler = (s.size() > 0) ? 0: 1;
     }
-    
+    */
     
     @Override
     public void addProcess(Process p){
        int prio = p.getPriority();
 
-       //Check wich type of queue we'll use
-       if(processes.isEmpty()){
-        
+       if(prio > schedulers.size() - 1){
+        //Go to last scheduler 
+        prio = schedulers.size() - 1;
+
        }
-        
+       //Let the priority be the queue a process is in
+       Scheduler s = schedulers.get(prio);
     }
     
     void defineCurrentScheduler(){
