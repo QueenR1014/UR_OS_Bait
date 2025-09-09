@@ -14,34 +14,64 @@ import java.util.Arrays;
  */
 public class PriorityQueue extends Scheduler{
 
-    int currentScheduler;
+    private int currentScheduler;
     private ArrayList<Integer> threshold; //Max amount of starvation  
+    private ArrayList<Integer> starvationCounter; //starvation timers per scheduler
     private ArrayList<Scheduler> schedulers;
     
-    //Single priority queue
-    PriorityQueue(OS os){
+    //----------------- 1. Single priority queue
+    PriorityQueue(OS os) {
         super(os);
-        currentScheduler = -1;
-        schedulers.add(new RoundRobin(os, 5)); //default scheduler
+        this.schedulers = new ArrayList<>();
+        this.threshold = new ArrayList<>();
+        this.starvationCounter = new ArrayList<>();
+        this.currentScheduler = -1;
+
+        // default: one RR
+        Scheduler rr = new RoundRobin(os, 5);
+        schedulers.add(rr);
+        threshold.add(10);
+        starvationCounter.add(0);
+        currentScheduler = 0; //default value for single queue
     }
     
-    PriorityQueue(OS os, Scheduler... s){ //Received multiple arrays, no thresholds specified
-        
-        this(os);
+    //----------------- 2. Multiple queues, default thresholds
+    PriorityQueue(OS os, Scheduler... s) {
+        this(os); // initialize lists
         schedulers.addAll(Arrays.asList(s));
-        if(s.length > 0){
-            currentScheduler = 0;
 
-        } 
+        int defaultStarvation = 10;
+        for (int i = 0; i < s.length; i++) {
+            threshold.add(defaultStarvation);
+            starvationCounter.add(0);
+        }
 
+        this.currentScheduler = (s.length > 0) ? 0 : -1;
+    }
+
+    //----------------- 3. Multiple queues, specified thresholds
+    PriorityQueue(OS os, ArrayList<Scheduler> s, ArrayList<Integer> t){
+        super(os);
+        //check every queue has it's starvation limit
+        if(s.size() != t.size()){
+            throw new IllegalArgumentException("Ammount of schedulers not equal to ammount of thresholds");
+        }
+        this.schedulers = s;
+        this.threshold = t;
+        this.starvationCounter = new ArrayList<>();
+        //initialize counters
+        for(int i = 0; i < t.size();i++){
+            starvationCounter.add(0);
+        }
+
+        this.currentScheduler = (s.size() > 0) ? 0: 1;
     }
     
     
     @Override
     public void addProcess(Process p){
-       //Overwriting the parent's addProcess(Process p) method may be necessary in order to decide what to do with process coming from the CPU.
-       //On which queue should the process go?
-        
+       int prio = p.getPriority();
+
        //Check wich type of queue we'll use
        if(processes.isEmpty()){
         
