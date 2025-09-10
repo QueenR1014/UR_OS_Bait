@@ -12,6 +12,8 @@ import java.util.Arrays;
  *
  * @author prestamour
  */
+
+//Implementation is preemptive
 public class PriorityQueue extends Scheduler{
 
     private int currentScheduler;
@@ -68,30 +70,95 @@ public class PriorityQueue extends Scheduler{
     
     @Override
     public void addProcess(Process p){
-       int prio = p.getPriority();
+        int prio = p.getPriority();
 
-       if(prio > schedulers.size() - 1){
-        //Go to last scheduler 
-        prio = schedulers.size() - 1;
+        if(prio > schedulers.size() - 1){
+            //Go to last scheduler 
+            prio = schedulers.size() - 1;
+        }
+        //Let the priority be the queue a process is in
+        Scheduler s = schedulers.get(prio);
+        
+        // Check if current process preempts the loaded process in cpu
+        if(!os.isCPUEmpty()){
+            Process running = os.getProcessInCPU();
+            if(running != null){
+                //smaller index => higher priority
+                if(prio < running.getPriority()){
+                    s.removeProcess(p);
+                    
+                    os.interrupt(InterruptType.SCHEDULER_CPU_TO_RQ, running);
+                    addContextSwitch(); //context switch for interruption
+                    
+                    os.interrupt(InterruptType.SCHEDULER_RQ_TO_CPU, p);
+                    addContextSwitch();
+                }
+            }
+        }
 
-       }
-       //Let the priority be the queue a process is in
-       Scheduler s = schedulers.get(prio);
+        //if no preemption needed add it to the RQ
+        s.addProcess(p);
+        
+        //schedule if cpu empty
+        if(os.isCPUEmpty()){
+            getNext(true);
+        }
     }
     
-    void defineCurrentScheduler(){
-        //This methos is suggested to help you find the scheduler that should be the next in line to provide processes... perhaps the one with process in the queue?
+    int defineCurrentScheduler(){
+        //This method is suggested to help you find the scheduler that should be the next in line to provide processes... perhaps the one with process in the queue?
+        
+        int topPriority = -1; //function will return -1 if all queues are empty
+        int i = 0;
+
+        while(i < schedulers.size()){
+            Scheduler s = schedulers.get(i);
+            if(!s.processes.isEmpty()){
+                topPriority = i;
+                break;
+            }
+            i++;
+        }
+        return topPriority;
     }
     
    
     @Override
     public void getNext(boolean cpuEmpty) {
-        //Suggestion: now that you know on which scheduler a process is, you need to keep advancing that scheduler. If it a preemptive one, you need to notice the changes
-        //that it may have caused and verify if the change is coherent with the priority policy for the queues.
-        //Suggestion: if the CPU is empty, just find the next scheduler based on the order and the existence of processes
-        //if the CPU is not empty, you need to define that will happen with the process... if it fully preemptive, and there are process pending in higher queue, does the
-        //scheduler removes a process from the CPU or does it let it finish its quantum? Make this decision and justify it.
-  
+        //Define if any higher priority queue is loading processes 
+        int topPrio = defineCurrentScheduler();
+
+        if(topPrio == -1){
+            //all queues empty, no process has to be loaded in cpu
+            return;
+        }
+        
+        //If CPU is empty, load the highest priority queue
+        if(cpuEmpty){
+            Scheduler top = schedulers.get(topPrio);
+            top.getNext(true);
+            currentScheduler = topPrio;
+            return;
+        }
+
+        //If CPU is not empty, check if we should preempt
+        Process running = os.getProcessInCPU();
+        int runningPrio = running.getPriority();
+
+        if(topPrio < runningPrio){
+            //the next process has a higher priority
+            os.interrupt(InterruptType.SCHEDULER_CPU_TO_RQ, running);
+            addContextSwitch();
+
+            Scheduler top = schedulers.get(topPrio);
+            top.getNext(true);
+            currentScheduler = topPrio;
+        }else{
+            //No higher priority than current process -> let current queue handle
+            Scheduler s = schedulers.get(runningPrio);
+            s.getNext(cpuEmpty);
+            currentScheduler = runningPrio;
+        }
     }
     
     @Override
