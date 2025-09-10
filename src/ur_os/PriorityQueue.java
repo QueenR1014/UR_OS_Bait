@@ -85,7 +85,8 @@ public class PriorityQueue extends Scheduler{
             if(running != null){
                 //smaller index => higher priority
                 if(prio < running.getPriority()){
-                    s.removeProcess(p);
+                    //No comentar lo de abajo si buggea
+                    //s.removeProcess(p);
                     
                     os.interrupt(InterruptType.SCHEDULER_CPU_TO_RQ, running);
                     addContextSwitch(); //context switch for interruption
