@@ -38,6 +38,7 @@ public class MFQ extends Scheduler{
        if(!schedulers.isEmpty()){
            schedulers.get(0).addProcess(p);
            defineCurrentScheduler();
+           addContextSwitch();
        }
     }
     
@@ -62,6 +63,7 @@ public class MFQ extends Scheduler{
         }
         if(currentScheduler!=-1){
             schedulers.get(currentScheduler).getNext(cpuEmpty);
+            addContextSwitch();
             defineCurrentScheduler();
         }
     }
@@ -71,6 +73,7 @@ public class MFQ extends Scheduler{
         defineCurrentScheduler();
         if(currentScheduler!=-1){
             schedulers.get(0).newProcess(cpuEmpty);
+            addContextSwitch();
         }
     } 
 
@@ -79,13 +82,16 @@ public class MFQ extends Scheduler{
         defineCurrentScheduler();
         if(currentScheduler!=-1){
             schedulers.get(0).IOReturningProcess(cpuEmpty);
+            addContextSwitch();
         }
     }
     public void downgradeProcess(Process p, int currentLevel) {
         if (currentLevel < schedulers.size() - 1) {
             schedulers.get(currentLevel + 1).addProcess(p);
+            addContextSwitch();
         } else {
             schedulers.get(currentLevel).addProcess(p);
+            addContextSwitch();
         }
         defineCurrentScheduler();
     }
