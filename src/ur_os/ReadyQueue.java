@@ -1,6 +1,5 @@
 package ur_os;
 
-import java.io.File;
 import static ur_os.CreateFile.createSchedulerFile;
 import static ur_os.SchedulerType.FCFS;
 
@@ -47,6 +46,10 @@ public class ReadyQueue {
                         new FCFS(os));
                 createSchedulerFile("MFQ");
                 break;
+            case SJF_Predicted:
+                s = new SJF_Predicted(os);
+                createSchedulerFile("SJF_Predicted");
+                break;
             case FAIR:
                 // Implementar si se desea
                 break;
@@ -74,3 +77,5 @@ public class ReadyQueue {
         return s.getTotalContextSwitches();
     }
 }
+
+
