@@ -39,7 +39,10 @@ public class PriorityQueue extends Scheduler {
         s.addProcess(p);
 
         if (os.isCPUEmpty()) {
+            Process prev = os.getProcessInCPU();
             getNext(true);
+            Process next = os.getProcessInCPU();
+            if(prev != next) addContextSwitch(); //only if the next process changes
         }
     }
 
@@ -69,8 +72,10 @@ public class PriorityQueue extends Scheduler {
         }
 
         Scheduler top = schedulers.get(topPrio);
+        Process prev = os.getProcessInCPU();
         top.getNext(true);
-        currentScheduler = topPrio;
+        Process next = os.getProcessInCPU();
+        if(prev != next) addContextSwitch(); //if delegated queue changes the process
     }
 
     public int getIndexOf(Scheduler s) {

@@ -63,7 +63,7 @@ public class MFQ extends Scheduler{
         }
         if(currentScheduler!=-1){
             schedulers.get(currentScheduler).getNext(cpuEmpty);
-            addContextSwitch();
+            //addContextSwitch();
             defineCurrentScheduler();
         }
     }
@@ -88,11 +88,11 @@ public class MFQ extends Scheduler{
     public void downgradeProcess(Process p, int currentLevel) {
         if (currentLevel < schedulers.size() - 1) {
             schedulers.get(currentLevel + 1).addProcess(p);
-            addContextSwitch();
+            //addContextSwitch();
         } else {
             schedulers.get(currentLevel).addProcess(p);
-            addContextSwitch();
         }
+        addContextSwitch();
         defineCurrentScheduler();
     }
 
