@@ -525,11 +525,24 @@ public final class SystemOS implements Runnable{
     
     //Everytime a process is taken out from memory, when a interruption occurs
     public double calcAvgContextSwitches() {
-        if(processes.isEmpty()) return 0; // No switches if no process done
-        int totalCS = os.getTotalContextSwitches();
-        //System.out.println("totalCS from rq: " + totalCS);
-        return (double) totalCS/ processes.size();
+    if (processes.isEmpty() || execution.isEmpty()){
+        System.out.println("FLAG EMPTY");
+        return 0;
     }
+
+    int last = execution.get(0);
+    int totalCS = 0;
+
+    for (int i = 1; i < execution.size(); i++) {
+        int current = execution.get(i);
+        if (current != last) {
+            totalCS++;
+            last = current;
+        }
+    }
+
+    return (double) totalCS / processes.size();
+}
     
     
     //Just context switches based on the execution timeline
